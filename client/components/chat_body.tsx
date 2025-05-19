@@ -3,17 +3,17 @@ import { Message } from '../pages/app'
 
 const ChatBody = ({ data }: { data: Array<Message> }) => {
   return (
-    <>
+    <div className='space-y-3'>
       {data.map((message: Message, index: number) => {
-        if (message.type == 'self') {
+        if (message.type === 'self') {
           return (
             <div
-              className='flex flex-col mt-2 w-full text-right justify-end'
+              className='flex flex-col w-full text-right justify-end'
               key={index}
             >
-              <div className='text-sm'>{message.username}</div>
-              <div>
-                <div className='bg-blue text-white px-4 py-1 rounded-md inline-block mt-1'>
+              <div className='text-xs md:text-sm text-gray-600'>{message.username}</div>
+              <div className='flex justify-end'>
+                <div className='bg-blue text-white px-3 py-2 md:px-4 md:py-2 rounded-lg max-w-[85%] md:max-w-[70%] break-words text-sm md:text-base'>
                   {message.content}
                 </div>
               </div>
@@ -21,10 +21,10 @@ const ChatBody = ({ data }: { data: Array<Message> }) => {
           )
         } else {
           return (
-            <div className='mt-2' key={index}>
-              <div className='text-sm'>{message.username}</div>
-              <div>
-                <div className='bg-grey text-dark-secondary px-4 py-1 rounded-md inline-block mt-1'>
+            <div className='flex flex-col' key={index}>
+              <div className='text-xs md:text-sm text-gray-600'>{message.username}</div>
+              <div className='flex justify-start'>
+                <div className='bg-grey text-dark-secondary px-3 py-2 md:px-4 md:py-2 rounded-lg max-w-[85%] md:max-w-[70%] break-words text-sm md:text-base'>
                   {message.content}
                 </div>
               </div>
@@ -32,7 +32,7 @@ const ChatBody = ({ data }: { data: Array<Message> }) => {
           )
         }
       })}
-    </>
+    </div>
   )
 }
 

@@ -121,24 +121,24 @@ const index = () => {
 
   return (
     <div className='flex flex-col w-full h-screen bg-white'>
-      <div className='flex-1 overflow-y-auto p-4 md:mx-6 mb-14'>
+      <div className='flex-1 overflow-y-auto p-2 md:p-4 md:mx-6 mb-14'>
         <ChatBody data={messages} />
-        <div ref={messagesEndRef} /> {/* Scroll anchor */}
+        <div ref={messagesEndRef} />
       </div>
-      <div className='fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-grey'>
-        <div className='flex md:flex-row px-4 py-2 md:mx-4 rounded-md'>
-          <div className='flex w-full mr-4 rounded-md border border-blue'>
+      <div className='fixed bottom-0 left-0 right-0 p-2 md:p-4 bg-white border-t border-grey'>
+        <div className='flex flex-col md:flex-row px-2 md:px-4 py-2 md:mx-4 rounded-md gap-2 md:gap-0'>
+          <div className='flex w-full md:mr-4 rounded-md border border-blue'>
             <textarea
               ref={textarea}
               placeholder='Type your message here'
-              className='w-full p-2 rounded-md focus:outline-none'
-              style={{ resize: 'none', minHeight: '40px' }}
+              className='w-full p-2 rounded-md focus:outline-none text-base md:text-lg'
+              style={{ resize: 'none', minHeight: '40px', maxHeight: '120px' }}
               onKeyPress={handleKeyPress}
             />
           </div>
-          <div className='flex items-center'>
+          <div className='flex items-center w-full md:w-auto'>
             <button
-              className='px-4 py-2 rounded-md bg-blue text-white hover:bg-opacity-90'
+              className='w-full md:w-auto px-4 py-2 rounded-md bg-blue text-white hover:bg-opacity-90 text-base md:text-lg'
               onClick={sendMessage}
             >
               Send
