@@ -9,7 +9,7 @@ import { useRouter } from 'next/router'
 const index = () => {
   const [rooms, setRooms] = useState<{ id: string; name: string }[]>([])
   const [roomName, setRoomName] = useState('')
-  const { user } = useContext(AuthContext)
+  const { user, logout } = useContext(AuthContext)
   const { setConn } = useContext(WebsocketContext)
 
   const router = useRouter()
@@ -70,6 +70,15 @@ const index = () => {
   return (
     <>
       <div className='my-8 px-4 md:mx-32 w-full h-full'>
+        <div className='flex justify-between items-center mb-8'>
+          <h1 className='text-xl font-bold'>Welcome, {user.username}!</h1>
+          <button
+            className='bg-red text-white px-4 py-2 rounded-md'
+            onClick={logout}
+          >
+            Logout
+          </button>
+        </div>
         <div className='flex justify-center mt-3 p-5'>
           <input
             type='text'

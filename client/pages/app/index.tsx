@@ -15,13 +15,23 @@ export type Message = {
 }
 
 const index = () => {
-  const [messages, setMessage] = useState<Array<Message>>([])
+  const [messages, setMessages] = useState<Array<Message>>([])
   const textarea = useRef<HTMLTextAreaElement>(null)
   const { conn } = useContext(WebsocketContext)
   const [users, setUsers] = useState<Array<{ username: string }>>([])
   const { user } = useContext(AuthContext)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const router = useRouter()
+
+  // Scroll to bottom whenever messages change
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   useEffect(() => {
     if (conn === null) {
@@ -37,14 +47,13 @@ const index = () => {
           headers: { 'Content-Type': 'application/json' },
         })
         const data = await res.json()
-
         setUsers(data)
       } catch (e) {
         console.error(e)
       }
     }
     getUsers()
-  }, [])
+  }, [conn, router])
 
   useEffect(() => {
     if (textarea.current) {
@@ -56,67 +65,88 @@ const index = () => {
       return
     }
 
-    conn.onmessage = (message) => {
-      const m: Message = JSON.parse(message.data)
-      if (m.content == 'A new user has joined the room') {
-        setUsers([...users, { username: m.username }])
-      }
+    const messageHandler = (message: MessageEvent) => {
+      const m = JSON.parse(message.data)
+      console.log('Received message:', m) // Debug log
 
-      if (m.content == 'user left the chat') {
-        const deleteUser = users.filter((user) => user.username != m.username)
-        setUsers([...deleteUser])
-        setMessage([...messages, m])
+      if (m.content === 'A new user has joined the room') {
+        setUsers(prevUsers => [...prevUsers, { username: m.username }])
         return
       }
 
-      user?.username == m.username ? (m.type = 'self') : (m.type = 'recv')
-      setMessage([...messages, m])
+      if (m.content === 'A user left the chat') {
+        setUsers(prevUsers => prevUsers.filter(u => u.username !== m.username))
+        return
+      }
+
+      // Xử lý tin nhắn chat dựa trên senderId
+      const newMessage: Message = {
+        content: m.content,
+        client_id: m.senderId || '',
+        username: m.username,
+        room_id: m.roomId || '',
+        type: m.senderId === user.id ? 'self' : 'recv'
+      }
+      
+      setMessages(prevMessages => [...prevMessages, newMessage])
     }
 
-    conn.onclose = () => {}
-    conn.onerror = () => {}
-    conn.onopen = () => {}
-  }, [textarea, messages, conn, users])
+    conn.onmessage = messageHandler
+
+    return () => {
+      if (conn) {
+        conn.onmessage = null
+      }
+    }
+  }, [conn, router, user?.id])
 
   const sendMessage = () => {
-    if (!textarea.current?.value) return
-    if (conn === null) {
-      router.push('/')
-      return
+    if (!textarea.current?.value.trim() || !conn) return
+    
+    try {
+      conn.send(textarea.current.value)
+      textarea.current.value = ''
+      textarea.current.style.height = 'auto'
+    } catch (error) {
+      console.error('Error sending message:', error)
     }
+  }
 
-    conn.send(textarea.current.value)
-    textarea.current.value = ''
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage()
+    }
   }
 
   return (
-    <>
-      <div className='flex flex-col w-full'>
-        <div className='p-4 md:mx-6 mb-14'>
-          <ChatBody data={messages} />
-        </div>
-        <div className='fixed bottom-0 mt-4 w-full'>
-          <div className='flex md:flex-row px-4 py-2 bg-grey md:mx-4 rounded-md'>
-            <div className='flex w-full mr-4 rounded-md border border-blue'>
-              <textarea
-                ref={textarea}
-                placeholder='type your message here'
-                className='w-full h-10 p-2 rounded-md focus:outline-none'
-                style={{ resize: 'none' }}
-              />
-            </div>
-            <div className='flex items-center'>
-              <button
-                className='p-2 rounded-md bg-blue text-white'
-                onClick={sendMessage}
-              >
-                Send
-              </button>
-            </div>
+    <div className='flex flex-col w-full h-screen bg-white'>
+      <div className='flex-1 overflow-y-auto p-4 md:mx-6 mb-14'>
+        <ChatBody data={messages} />
+        <div ref={messagesEndRef} /> {/* Scroll anchor */}
+      </div>
+      <div className='fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-grey'>
+        <div className='flex md:flex-row px-4 py-2 md:mx-4 rounded-md'>
+          <div className='flex w-full mr-4 rounded-md border border-blue'>
+            <textarea
+              ref={textarea}
+              placeholder='Type your message here'
+              className='w-full p-2 rounded-md focus:outline-none'
+              style={{ resize: 'none', minHeight: '40px' }}
+              onKeyPress={handleKeyPress}
+            />
+          </div>
+          <div className='flex items-center'>
+            <button
+              className='px-4 py-2 rounded-md bg-blue text-white hover:bg-opacity-90'
+              onClick={sendMessage}
+            >
+              Send
+            </button>
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

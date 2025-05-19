@@ -13,10 +13,12 @@ type Client struct {
 	RoomID   string `json:"roomId"`
 	Username string `json:"username"`
 }
+
 type Message struct {
 	Content  string `json:"content"`
 	RoomID   string `json:"roomId"`
 	Username string `json:"username"`
+	SenderID string `json:"senderId"` // Thêm ID người gửi
 }
 
 func (c *Client) writeMessage() {
@@ -50,6 +52,7 @@ func (c *Client) readMessage(hub *Hub) {
 			Content:  string(m),
 			RoomID:   c.RoomID,
 			Username: c.Username,
+			SenderID: c.ID, // Thêm ID người gửi vào tin nhắn
 		}
 
 		hub.Broadcast <- msg
