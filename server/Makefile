@@ -1,19 +1,21 @@
 postgresinit:
-	docker run --name postgreSQL -p 5433:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=Password123 -d postgres
+	docker run --name postgreSQL -p 5432:5432 -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=123456 -d postgres
 
 postgres:
-	docker exec -it postgreSQL psql
+  docker ps | grep postgreSQL || docker start postgreSQL
+  docker exec -it postgreSQL psql
+
 
 createdb:
-	docker exec -it postgreSQL createdb --username=root --owner=root go-chat
+	docker exec -it postgreSQL createdb --username=admin --owner=admin go-chat
 
 dropdb:
-	docker exec -it postgreSQL dropdb go-chat
+	docker exec -it postgreSQL dropdb --username=admin go-chat
 
 migrateup:
-	migrate -path db/migration -database "postgresql://admin:123456@localhost:5432/go-chat?sslmode=disable" -verbose up
+	migrate -path db/migrations -database "postgresql://admin:123456@localhost:5432/go-chat?sslmode=disable" -verbose up
 
 migratedown:
-	migrate -path db/migration -database "postgresql://admin:123456@localhost:5432/go-chat?sslmode=disable" -verbose down
+	migrate -path db/migrations -database "postgresql://admin:123456@localhost:5432/go-chat?sslmode=disable" -verbose down
 	
-.PHONY: postgresinit postgres createdb dropdb
+.PHONY: postgresinit postgres createdb dropdb migrateup migratedown
