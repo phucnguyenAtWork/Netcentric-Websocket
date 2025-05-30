@@ -79,7 +79,6 @@ server/
     ws/           # WebSocket domain: hub, client, handlers
   router/         # HTTP and WebSocket route definitions
   util/           # Utility functions (e.g., password hashing)
-  Makefile        # Database and build operations
 
 client/
   pages/          # Next.js pages (routing)
@@ -87,6 +86,8 @@ client/
   modules/        # Context providers for auth and WebSocket
   constants/      # Configuration constants
   styles/         # TailwindCSS and global styles
+
+Makefile        # Database and build operations
 ```
 
 ## Server Flow
